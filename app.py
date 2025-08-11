@@ -118,6 +118,47 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"❌ FAILED TO INITIALIZE AND START SERVER. ERROR: {e}")
 
+
+
+        # In app.py
+
+@app.route('/summarize', methods=['POST'])
+def summarize():
+    """Handles summarization requests from the frontend."""
+    data = request.get_json()
+    messages = data.get("messages")
+
+    if not messages:
+        return jsonify({"error": "No messages provided"}), 400
+
+    # Combine the chat history into a single string
+    transcript = "\n".join([f"{msg['sender']}: {msg['text']}" for msg in messages])
+    
+    # Create a new prompt for summarization
+    summary_prompt = f"""
+    Based on the following chat conversation, please provide a concise summary. 
+    Use bullet points for the key topics discussed.
+
+    Conversation:
+    {transcript}
+
+    Summary:
+    """
+
+    try:
+        # Use the same RAG chain's LLM to generate the summary
+        # NOTE: This assumes your `llm` is accessible. If not, you might need to re-initialize it.
+        # For simplicity, we re-use the rag_chain's llm component.
+        summary_response = rag_chain.question_answer_chain.llm.invoke({"input": summary_prompt})
+        
+        # Extract the text from the response
+        summary_text = summary_response.content if hasattr(summary_response, 'content') else str(summary_response)
+
+        return jsonify({"summary": summary_text})
+    except Exception as e:
+        print(f"Error during summarization: {e}")
+        return jsonify({"error": "Failed to generate summary."}), 500
+
 # from flask import Flask, request, jsonify
 # from flask_cors import CORS
 

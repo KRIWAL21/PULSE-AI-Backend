@@ -143,6 +143,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+trials.ipynb    
 
 # Spyder project settings
 .spyderproject
