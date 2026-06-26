@@ -81,7 +81,7 @@ Run the app.py script from the terminal:
 
 python app.py
 
-Your terminal will show that the server is running, usually on http://127.0.0.1:8080.
+Your terminal will show that the server is running, usually on http://127.0.0.1:8081.
 
 Open your web browser and navigate to that address to start chatting with PulseAI!
 

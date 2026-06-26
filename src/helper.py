@@ -1,59 +1,45 @@
-# New, corrected imports
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List
-from langchain.schema import Document
-
-# from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_core.documents import Document
 
 
-
-
-
-#extract text from pdf
-def load_pdf(data):
+def load_pdf(data: str) -> List[Document]:
+    """Load all PDF files from the given directory path."""
     loader = DirectoryLoader(
         data,
-        glob="*.pdf",  # all pdf files
+        glob="*.pdf",
         loader_cls=PyPDFLoader
     )
-    documents = loader.load()
-    return documents
+    return loader.load()
+
 
 def filter_to_minimal_doc(docs: List[Document]) -> List[Document]:
     """
-    Filter documents to only include the minimal necessary information.
+    Strip all metadata except 'source' to reduce Pinecone payload size.
+    Keeping 'source' allows us to surface citations in the chat UI.
     """
-    minimal_docs = []
-    for doc in docs:
-        src = doc.metadata.get("source")
-        minimal_docs.append(
-            Document(
-                page_content=doc.page_content,
-                metadata={"source": src}
-            )
+    return [
+        Document(
+            page_content=doc.page_content,
+            metadata={"source": doc.metadata.get("source", "")}
         )
-    return minimal_docs
-
-# Split the documents into smaller chunks
-def text_split(minimal_docs):
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=20,
-    )
-    texts_chunk = text_splitter.split_documents(minimal_docs)
-    return texts_chunk
+        for doc in docs
+    ]
 
 
-
-def download_embeddings():
+def text_split(docs: List[Document]) -> List[Document]:
     """
-    Download the embeddings model from HuggingFace.
+    Split documents into overlapping chunks for retrieval.
+    
+    chunk_size=1000: Enough context for the LLM to understand a concept
+    chunk_overlap=150: Prevents cutting answers in half at chunk boundaries
+    
+    Why not larger? Pinecone has metadata size limits, and LLMs perform
+    better with focused, relevant context rather than huge chunks.
     """
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    embeddings = HuggingFaceEmbeddings(
-        model_name=model_name,
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=150,
     )
-    return embeddings
+    return splitter.split_documents(docs)
