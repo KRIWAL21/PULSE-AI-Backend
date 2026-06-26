@@ -1,89 +1,133 @@
-🩺 PulseAI - Your AI Medical Assistant
-PulseAI is an intelligent, document-aware chatbot designed to answer medical questions based on a provided set of PDF documents. It leverages a powerful combination of Large Language Models (LLMs) via Google's Gemini API, vector embeddings, and a high-performance vector database (Pinecone) to deliver accurate, context-aware responses through a clean and intuitive web interface.
+<div align="center">
 
-(Suggestion: Replace the URL above with a real screenshot of your running application)
+# ⚡ Dr. Pulse AI — Cloud RAG Diagnostic Backend
 
-✨ Key Features
-Intelligent Q&A: Ask complex medical questions and receive detailed answers sourced directly from your documents.
+**Enterprise Retrieval-Augmented Generation & Medical Intelligence Engine**
 
-RAG Pipeline: Utilizes a Retrieval-Augmented Generation (RAG) architecture to ensure answers are grounded in the provided context, minimizing hallucinations.
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![Gemini](https://img.shields.io/badge/DeepMind-Gemini_2.5-4285F4?logo=google&logoColor=white)](https://deepmind.google/technologies/gemini)
+[![Pinecone](https://img.shields.io/badge/Vector_DB-Pinecone-000000?logo=pinecone&logoColor=white)](https://pinecone.io)
+[![Supabase](https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
+[![Render](https://img.shields.io/badge/Deployed_on-Render-46E3B7?logo=render&logoColor=white)](https://render.com)
 
-High-Performance Vector Search: Uses Pinecone's serverless vector database for fast and efficient similarity searches.
+[Live API Swagger Docs](https://pulse-ai-backend-drf3.onrender.com/docs) • [Frontend Console Repo](https://github.com/KRIWAL21/PulseAI-FRONTEND) • [Report Bug](https://github.com/KRIWAL21/PULSE-AI-Backend/issues)
 
-Google Gemini Integration: Powered by Google's Gemini models for both generating high-quality embeddings and crafting natural language responses.
+</div>
 
-Modern Web Interface: A clean, responsive, and user-friendly chat interface built with HTML and Tailwind CSS.
+---
 
-Scalable Backend: A lightweight and robust backend powered by Flask.
+## 🧠 Executive Overview
 
-🛠️ Tech Stack
-Backend: Python, Flask
+**PULSE-AI-Backend** is a high-performance asynchronous REST and Server-Sent Events (SSE) diagnostic service built with **FastAPI**. It powers the Dr. Pulse clinical terminal by bridging cutting-edge **Google DeepMind Gemini 2.5** language models with a serverless **Pinecone Vector Database** containing indexed medical textbooks, clinical guidelines, and pharmacological literature.
 
-LLM & Embeddings: Google Gemini (gemini-1.5-flash, embedding-001)
+To ensure enterprise data durability, the backend employs **SQLAlchemy ORM** connected to **Supabase Cloud PostgreSQL** for persistent user profile telemetry, authentication, and encrypted consultation histories.
 
-Framework: LangChain
+---
 
-Vector Database: Pinecone
+## 🏛️ Architectural Pillars
 
-Frontend: HTML, Tailwind CSS, JavaScript
+* ⚡ **FastAPI Asynchronous Core:** High-throughput ASGI server supporting non-blocking concurrent requests and real-time SSE token streaming.
+* 🌲 **Pinecone Serverless Vector Search:** Semantic similarity search utilizing high-dimensional embeddings (`text-embedding-004` / `embedding-001`) to retrieve exact top-K relevant clinical paragraphs in milliseconds.
+* ☁️ **Supabase Cloud PostgreSQL:** Permanent relational persistence replacing volatile local storage. Automatically manages user accounts, chat sessions, and message transcripts.
+* 🔒 **Enterprise JWT Security:** OAuth2 bearer token authentication with bcrypt password hashing and secure token validation.
+* 💓 **Automated Health Heartbeat:** Built-in `/health` diagnostic endpoint optimized for zero-downtime cloud pingers (UptimeRobot / Cron-job.org).
 
-Deployment: (Example: Render for backend, Netlify for frontend)
+---
 
-🚀 Getting Started
-Follow these instructions to get a local copy up and running.
+## 📐 RAG Pipeline Workflow
 
-Prerequisites
-Python 3.10 or higher
+```mermaid
+sequenceDiagram
+    participant C as 💻 React Frontend console
+    participant F as ⚡ FastAPI Cloud Server
+    participant P as 🌲 Pinecone Vector DB
+    participant G as 🧠 DeepMind Gemini 2.5
+    participant S as [(🔒 Supabase Postgres)]
 
-A Pinecone account and API key
+    C->>F: POST /chat (Symptom Inquiry + JWT)
+    F->>S: Verify User & Load Conversation Context
+    F->>G: Generate Query Embedding
+    G-->>F: High-Dimensional Vector
+    F->>P: Semantic Search (Top-K Matches)
+    P-->>F: Verified Medical Citations & Excerpts
+    F->>G: Stream Grounded Clinical Prompt
+    G-->>C: Real-Time SSE Token Stream
+    F->>S: Persist Consultation Transcript
+```
 
-A Google Gemini API key
+---
 
-Installation
-Clone the repository:
+## 🔌 API Endpoints Reference
 
-git clone https://github.com/your-username/PulseAI-Your-Digital-Doctor.git
-cd PulseAI-Your-Digital-Doctor
+| Method | Endpoint | Description | Auth Required |
+| :---: | :--- | :--- | :---: |
+| `GET` | `/health` | Cloud pinger heartbeat & system diagnostics | No |
+| `POST` | `/auth/signup` | Register new clinician or patient account | No |
+| `POST` | `/auth/login` | Authenticate credentials & generate JWT token | No |
+| `GET` | `/chat/conversations`| Retrieve persistent chat history for active user | Yes |
+| `POST` | `/chat/conversations`| Initialize new consultation session | Yes |
+| `POST` | `/chat` | Submit clinical inquiry for RAG inference | Yes |
+| `DELETE`| `/chat/conversations/{id}`| Purge specific patient consultation record | Yes |
 
-Create a virtual environment:
+---
 
+## 🚀 Local Setup & Installation
+
+### Prerequisites
+* **Python** `>= 3.10`
+* **Pinecone Account** & Index (`medical-chatbot-gemini`)
+* **Google Gemini API Key**
+* **Supabase PostgreSQL Database URL**
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/KRIWAL21/PULSE-AI-Backend.git
+cd PULSE-AI-Backend
+```
+
+### 2. Create Virtual Environment
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+```
 
-Install the required packages:
-
+### 3. Install Dependencies
+```bash
 pip install -r requirements.txt
+```
 
-Set up your environment variables:
-Create a file named .env in the root of your project and add your API keys:
+### 4. Configure Environment Variables
+Create a `.env` file in the root folder:
+```env
+GEMINI_API_KEY="AIzaSy..."
+PINECONE_API_KEY="pcsk_..."
+DATABASE_URL="postgresql://postgres:password@db.xxxx.supabase.co:5432/postgres"
+JWT_SECRET_KEY="your-super-secret-jwt-key"
+```
 
-PINECONE_API_KEY="YOUR_PINECONE_API_KEY"
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+### 5. Launch FastAPI Server
+```bash
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+Access interactive Swagger API documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-⚙️ How to Run the Project
-The project has two main parts: indexing your data and running the web application.
+---
 
-Step 1: Index Your Documents
-Before you can ask questions, you need to process your PDF files and store their embeddings in Pinecone.
+## 📚 Document Indexing Script
 
-Place all your medical PDF files into the /data directory.
-
-Run the store_index.py script from the terminal:
-
+To ingest new medical textbooks or clinical PDFs into Pinecone:
+1. Place PDF files into the `data/` directory.
+2. Execute the ingestion pipeline:
+```bash
 python store_index.py
+```
 
-This script will read the PDFs, generate embeddings using Gemini, and upload them to your Pinecone index (medical-chatbot-gemini). This only needs to be done once, or whenever you add new documents.
+---
 
-Step 2: Run the Web Application
-Once your data is indexed, you can start the chatbot server.
-
-Run the app.py script from the terminal:
-
-python app.py
-
-Your terminal will show that the server is running, usually on http://127.0.0.1:8081.
-
-Open your web browser and navigate to that address to start chatting with PulseAI!
-
-⚠️ Disclaimer
-PulseAI is an informational tool and is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
+<div align="center">
+  <p>Engineered with ❤️ by <a href="https://github.com/KRIWAL21">KRIWAL21</a></p>
+</div>
