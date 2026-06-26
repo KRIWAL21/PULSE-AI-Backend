@@ -74,6 +74,11 @@ app.add_exception_handler(RateLimitExceeded, lambda request, exc: JSONResponse(
     content={"detail": "Rate limit exceeded"}
 ))
 
+@app.get("/health", tags=["System"])
+async def health_check():
+    """Uptime heartbeat check for zero-downtime cloud monitors."""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat(), "service": "PulseAI-Backend"}
+
 # ─────────────────────────────────────────────────────────────────────────
 # Global State — initialized once at startup
 # ─────────────────────────────────────────────────────────────────────────
